@@ -1,0 +1,149 @@
+package net.tuffetspider.xiphosura.entity;
+
+import net.minecraft.entity.EntityData;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.FuzzyTargeting;
+import net.minecraft.entity.ai.control.AquaticMoveControl;
+import net.minecraft.entity.ai.control.MoveControl;
+import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.AmphibiousSwimNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.SwimNavigation;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+//Tracking Entity Variant data
+public class HorseshoeCrabEntity extends AnimalEntity {
+    private static final TrackedData<Integer> DATA_ID_TYPE_VARIANT = DataTracker.registerData(HorseshoeCrabEntity.class, TrackedDataHandlerRegistry.INTEGER);
+
+    protected HorseshoeCrabEntity(EntityType<? extends AnimalEntity> entityType, World world) {
+        super(entityType, world);
+        this.moveControl = new MoveControl(this);
+
+    }
+    public static DefaultAttributeContainer.Builder createBaseAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH,12)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,0.5)
+                .add(EntityAttributes.GENERIC_STEP_HEIGHT,1);
+    }
+    private static class OceanFloorNavigation extends SwimNavigation{
+
+        public OceanFloorNavigation(MobEntity mobEntity, World world) {
+            super(mobEntity, world);
+        }
+
+        @Override
+        public boolean isValidPosition(BlockPos pos) {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isPushedByFluids() {
+        return false;    }
+    protected int getNextAirUnderwater(int air) {
+        return air;
+    }
+    protected EntityNavigation createNavigation(World world) {
+        return new OceanFloorNavigation(this, world);
+    }
+
+    @Override
+    protected void initGoals() {
+        this.goalSelector.add(1, new EscapeDangerGoal(this, 2.0));
+        this.goalSelector.add(2, new AnimalMateGoal(this, 1.0));
+        this.goalSelector.add(3, new TemptGoal(this, 1.25, (stack) -> {
+            return stack.isOf(Items.KELP);
+        }, false));
+        this.goalSelector.add(4, new FollowParentGoal(this, 1.25));
+        this.goalSelector.add(5, new wanderAroundFloorGoal(this, 1.0));
+        this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
+        this.goalSelector.add(7, new LookAroundGoal(this));
+    }
+
+    //Attempt to get horseshoe crabs to wander around the ocean floor while still being able to swim
+    //Currently not working
+    private static class wanderAroundFloorGoal extends WanderAroundFarGoal {
+        public wanderAroundFloorGoal(PathAwareEntity pathAwareEntity, double d) {
+            super(pathAwareEntity, d);
+        }
+
+        @Override
+        protected @Nullable Vec3d getWanderTarget() {
+            return this.mob.getRandom().nextFloat() >= this.probability ? FuzzyTargeting.find(this.mob, 10, 7) : super.getWanderTarget();
+
+        }
+    }
+
+
+
+
+
+    @Override
+    public boolean isBreedingItem(ItemStack stack) {
+        return stack.isOf(Items.KELP);
+    }
+
+    @Override
+    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
+        HorseshoeCrabEntity babycrab = ModEntities.HORSESHOE_CRAB.create(world);
+        HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
+        babycrab.setVariant(crabVariant);
+        return babycrab;
+    }
+
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(DATA_ID_TYPE_VARIANT,0);
+    }
+    public HorseshoeCrabVariant getEntityVariant() {
+        return HorseshoeCrabVariant.byId(this.getTypeVariant()&255);
+    }
+    private int getTypeVariant(){
+        return this.dataTracker.get(DATA_ID_TYPE_VARIANT);
+    }
+    private void setVariant(HorseshoeCrabVariant crabVariant){
+        this.dataTracker.set(DATA_ID_TYPE_VARIANT, crabVariant.getId()&255);
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        super.writeCustomDataToNbt(nbt);
+        nbt.putInt("variant",this.getTypeVariant());
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        super.readCustomDataFromNbt(nbt);
+        this.dataTracker.set(DATA_ID_TYPE_VARIANT,nbt.getInt("variant"));
+    }
+
+    @Override
+    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
+        HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
+        setVariant(crabVariant);
+        return super.initialize(world, difficulty, spawnReason, entityData);
+    }
+}

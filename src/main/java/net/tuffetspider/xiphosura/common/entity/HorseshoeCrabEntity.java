@@ -1,13 +1,11 @@
-package net.tuffetspider.xiphosura.entity;
+package net.tuffetspider.xiphosura.common.entity;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.FuzzyTargeting;
-import net.minecraft.entity.ai.control.AquaticMoveControl;
 import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.AmphibiousSwimNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.SwimNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -31,6 +29,7 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+
 //Tracking Entity Variant data
 public class HorseshoeCrabEntity extends AnimalEntity {
     private static final TrackedData<Integer> DATA_ID_TYPE_VARIANT = DataTracker.registerData(HorseshoeCrabEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -47,24 +46,15 @@ public class HorseshoeCrabEntity extends AnimalEntity {
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,0.5)
                 .add(EntityAttributes.GENERIC_STEP_HEIGHT,1);
     }
-    private static class OceanFloorNavigation extends SwimNavigation{
-
-        public OceanFloorNavigation(MobEntity mobEntity, World world) {
-            super(mobEntity, world);
-        }
-
-        @Override
-        public boolean isValidPosition(BlockPos pos) {
-            return true;
-        }
-    }
-
     @Override
     public boolean isPushedByFluids() {
-        return false;    }
+        return false;
+    }
+
     protected int getNextAirUnderwater(int air) {
         return air;
     }
+
     protected EntityNavigation createNavigation(World world) {
         return new OceanFloorNavigation(this, world);
     }
@@ -73,32 +63,12 @@ public class HorseshoeCrabEntity extends AnimalEntity {
     protected void initGoals() {
         this.goalSelector.add(1, new EscapeDangerGoal(this, 2.0));
         this.goalSelector.add(2, new AnimalMateGoal(this, 1.0));
-        this.goalSelector.add(3, new TemptGoal(this, 1.25, (stack) -> {
-            return stack.isOf(Items.KELP);
-        }, false));
+        this.goalSelector.add(3, new TemptGoal(this, 1.25, (stack) -> stack.isOf(Items.KELP), false));
         this.goalSelector.add(4, new FollowParentGoal(this, 1.25));
-        this.goalSelector.add(5, new wanderAroundFloorGoal(this, 1.0));
+        this.goalSelector.add(5, new WanderAroundFloorGoal(this, 1.0));
         this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
         this.goalSelector.add(7, new LookAroundGoal(this));
     }
-
-    //Attempt to get horseshoe crabs to wander around the ocean floor while still being able to swim
-    //Currently not working
-    private static class wanderAroundFloorGoal extends WanderAroundFarGoal {
-        public wanderAroundFloorGoal(PathAwareEntity pathAwareEntity, double d) {
-            super(pathAwareEntity, d);
-        }
-
-        @Override
-        protected @Nullable Vec3d getWanderTarget() {
-            return this.mob.getRandom().nextFloat() >= this.probability ? FuzzyTargeting.find(this.mob, 10, 7) : super.getWanderTarget();
-
-        }
-    }
-
-
-
-
 
     @Override
     public boolean isBreedingItem(ItemStack stack) {
@@ -108,8 +78,10 @@ public class HorseshoeCrabEntity extends AnimalEntity {
     @Override
     public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
         HorseshoeCrabEntity babycrab = ModEntities.HORSESHOE_CRAB.create(world);
-        HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
-        babycrab.setVariant(crabVariant);
+        if (babycrab != null) {
+            HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
+            babycrab.setVariant(crabVariant);
+        }
         return babycrab;
     }
 
@@ -118,14 +90,17 @@ public class HorseshoeCrabEntity extends AnimalEntity {
         super.initDataTracker(builder);
         builder.add(DATA_ID_TYPE_VARIANT,0);
     }
+
     public HorseshoeCrabVariant getEntityVariant() {
-        return HorseshoeCrabVariant.byId(this.getTypeVariant()&255);
+        return HorseshoeCrabVariant.byId(this.getTypeVariant() & 255);
     }
+
     private int getTypeVariant(){
         return this.dataTracker.get(DATA_ID_TYPE_VARIANT);
     }
+
     private void setVariant(HorseshoeCrabVariant crabVariant){
-        this.dataTracker.set(DATA_ID_TYPE_VARIANT, crabVariant.getId()&255);
+        this.dataTracker.set(DATA_ID_TYPE_VARIANT, crabVariant.getId() & 255);
     }
 
     @Override
@@ -145,5 +120,31 @@ public class HorseshoeCrabEntity extends AnimalEntity {
         HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
         setVariant(crabVariant);
         return super.initialize(world, difficulty, spawnReason, entityData);
+    }
+
+    // TODO: fix movement
+    private static class OceanFloorNavigation extends SwimNavigation {
+        public OceanFloorNavigation(MobEntity mobEntity, World world) {
+            super(mobEntity, world);
+        }
+
+        @Override
+        public boolean isValidPosition(BlockPos pos) {
+            return true;
+        }
+    }
+
+
+    //Attempt to get horseshoe crabs to wander around the ocean floor while still being able to swim
+    //Currently not working
+    private static class WanderAroundFloorGoal extends WanderAroundFarGoal {
+        public WanderAroundFloorGoal(PathAwareEntity pathAwareEntity, double d) {
+            super(pathAwareEntity, d);
+        }
+
+        @Override
+        protected @Nullable Vec3d getWanderTarget() {
+            return this.mob.getRandom().nextFloat() >= this.probability ? FuzzyTargeting.find(this.mob, 10, 7) : super.getWanderTarget();
+        }
     }
 }

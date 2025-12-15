@@ -1,8 +1,10 @@
-package net.tuffetspider.xiphosura.entity;
+package net.tuffetspider.xiphosura.common.entity;
 
 import java.util.Arrays;
 import java.util.Comparator;
-//Enum defining variants
+
+// Enum defining variants
+// TODO: data-driven or StringIdentifiable
 public enum HorseshoeCrabVariant {
     DEFAULT(0),
     BLUE(1),

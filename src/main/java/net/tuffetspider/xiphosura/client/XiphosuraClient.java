@@ -1,13 +1,11 @@
-package net.tuffetspider.xiphosura;
+package net.tuffetspider.xiphosura.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.tuffetspider.xiphosura.entity.HorseshoeCrabEntity;
-import net.tuffetspider.xiphosura.entity.ModEntities;
-import net.tuffetspider.xiphosura.entity.client.HorseshoeCrabModel;
-import net.tuffetspider.xiphosura.entity.client.HorseshoeCrabRenderer;
+import net.tuffetspider.xiphosura.common.entity.ModEntities;
+import net.tuffetspider.xiphosura.client.render.HorseshoeCrabModel;
+import net.tuffetspider.xiphosura.client.render.HorseshoeCrabRenderer;
 
 public class XiphosuraClient implements ClientModInitializer {
     @Override

@@ -1,17 +1,15 @@
-package net.tuffetspider.xiphosura.entity.client;
+package net.tuffetspider.xiphosura.client.render;
 
 import com.google.common.collect.Maps;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
-import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.tuffetspider.xiphosura.Xiphosura;
-import net.tuffetspider.xiphosura.entity.HorseshoeCrabEntity;
-import net.tuffetspider.xiphosura.entity.HorseshoeCrabVariant;
+import net.tuffetspider.xiphosura.common.Xiphosura;
+import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabEntity;
+import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabVariant;
 
 import java.util.Map;
 
@@ -29,7 +27,6 @@ public class HorseshoeCrabRenderer extends MobEntityRenderer<HorseshoeCrabEntity
         super(context, new HorseshoeCrabModel<>(context.getPart(HorseshoeCrabModel.HORSESHOE_CRAB)),0.25f);
     }
 
-
     @Override
     public Identifier getTexture(HorseshoeCrabEntity entity) {
         return TEXTURE_LOCATION_BY_VARIANT.get(entity.getEntityVariant());
@@ -37,11 +34,10 @@ public class HorseshoeCrabRenderer extends MobEntityRenderer<HorseshoeCrabEntity
 
     @Override
     public void render(HorseshoeCrabEntity livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        if(livingEntity.isBaby()){
-            matrixStack.scale(0.5f,0.5f,0.5f);
-        } else {
-            matrixStack.scale(1f,1f,1f);
+        if (livingEntity.isBaby()) {
+            matrixStack.scale(0.5f,0.5f,0.5f); // TODO: find out if a superclass already does this
         }
+
         super.render(livingEntity, f, g, matrixStack, vertexConsumerProvider, i);
     }
 }

@@ -3,9 +3,10 @@
 	"id": "xiphosura",
 	"version": "${version}",
 	"name": "Xiphosura",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Adding horseshoe crabs to Minecraft",
 	"authors": [
-		"Me!"
+        "TuffetSpider_",
+		"Survivalblock"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -16,13 +17,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.tuffetspider.xiphosura.Xiphosura"
+          "net.tuffetspider.xiphosura.common.Xiphosura"
 		],
 		"client": [
-			"net.tuffetspider.xiphosura.XiphosuraClient"
+          "net.tuffetspider.xiphosura.client.XiphosuraClient"
 		],
 		"fabric-datagen": [
-			"net.tuffetspider.xiphosura.XiphosuraDataGenerator"
+          "net.tuffetspider.xiphosura.client.datagen.XiphosuraDataGenerator"
 		]
 	},
 	"mixins": [

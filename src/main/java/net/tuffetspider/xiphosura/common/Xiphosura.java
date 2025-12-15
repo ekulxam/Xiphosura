@@ -1,12 +1,10 @@
-package net.tuffetspider.xiphosura;
+package net.tuffetspider.xiphosura.common;
 
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.tuffetspider.xiphosura.entity.HorseshoeCrabEntity;
-import net.tuffetspider.xiphosura.entity.ModEntities;
-import net.tuffetspider.xiphosura.entity.client.HorseshoeCrabRenderer;
+import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabEntity;
+import net.tuffetspider.xiphosura.common.entity.ModEntities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +19,5 @@ public class Xiphosura implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModEntities.registerModEntities();
-		FabricDefaultAttributeRegistry.register(ModEntities.HORSESHOE_CRAB, HorseshoeCrabEntity.createBaseAttributes());
-
 	}
 }

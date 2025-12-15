@@ -38,3 +38,7 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+/src/main/generated/.cache
+.github/ISSUE_TEMPLATE/issue.yml
+/.github
+gradlew

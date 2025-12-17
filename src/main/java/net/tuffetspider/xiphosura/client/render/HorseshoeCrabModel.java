@@ -45,29 +45,29 @@ public class HorseshoeCrabModel<T extends HorseshoeCrabEntity> extends SinglePar
                 .uv(22, 2).cuboid(-3.5F, 2.0F, -1.0F, 1.0F, 3.0F, 1.0F, new Dilation(0.0F))
                 .uv(22, 1).cuboid(-3.5F, 1.0F, -3.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F))
                 .uv(22, 1).cuboid(1.5F, 1.0F, -1.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F))
-                .uv(22, 1).cuboid(1.5F, 1.0F, -3.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 18.0F, -5.0F));
+                .uv(22, 1).cuboid(1.5F, 1.0F, -3.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 20.0F, 0.0F));
 
-        ModelPartData top_gills = modelPartData.addChild("top_gills", ModelPartBuilder.create().uv(3, 37).cuboid(-4.0F, -2.0F, 0.0F, 8.0F, 3.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 15.0F, -6.0F));
+        ModelPartData top_gills = modelPartData.addChild("top_gills", ModelPartBuilder.create().uv(3, 37).cuboid(-4.0F, -2.0F, 0.0F, 8.0F, 3.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 17.0F, -1.0F));
 
-        ModelPartData left_gills = modelPartData.addChild("left_gills", ModelPartBuilder.create().uv(0, 40).cuboid(-3.0F, -4.0F, 0.0F, 3.0F, 7.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(-4.0F, 18.0F, -6.0F));
+        ModelPartData left_gills = modelPartData.addChild("left_gills", ModelPartBuilder.create().uv(0, 40).cuboid(-3.0F, -4.0F, 0.0F, 3.0F, 7.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(-4.0F, 20.0F, -1.0F));
 
-        ModelPartData right_gills = modelPartData.addChild("right_gills", ModelPartBuilder.create().uv(11, 40).cuboid(0.0F, -4.0F, 0.0F, 3.0F, 7.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(4.0F, 18.0F, -6.0F));
+        ModelPartData right_gills = modelPartData.addChild("right_gills", ModelPartBuilder.create().uv(11, 40).cuboid(0.0F, -4.0F, 0.0F, 3.0F, 7.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(4.0F, 20.0F, -1.0F));
 
         ModelPartData body = modelPartData.addChild("body", ModelPartBuilder.create().uv(0, 9).cuboid(-3.0F, 1.0F, -8.0F, 6.0F, 2.0F, 3.0F, new Dilation(0.0F))
                 .uv(2, 17).cuboid(0.0F, -2.0F, -8.0F, 0.0F, 5.0F, 9.0F, new Dilation(0.0F))
                 .uv(0, 14).cuboid(-0.5F, 2.0F, -5.0F, 1.0F, 1.0F, 7.0F, new Dilation(0.0F))
                 .uv(22, 2).cuboid(-3.0F, 2.0F, -8.0F, 1.0F, 3.0F, 1.0F, new Dilation(0.0F))
-                .uv(22, 1).cuboid(1.0F, 1.0F, -8.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 18.0F, 4.0F));
+                .uv(22, 1).cuboid(1.0F, 1.0F, -8.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 20.0F, 9.0F));
 
-        ModelPartData leg4 = modelPartData.addChild("leg4", ModelPartBuilder.create(), ModelTransform.pivot(3.5F, 19.0F, -4.0F));
+        ModelPartData leg4 = modelPartData.addChild("leg4", ModelPartBuilder.create(), ModelTransform.pivot(3.5F, 21.0F, 1.0F));
 
-        ModelPartData leg2 = modelPartData.addChild("leg2", ModelPartBuilder.create(), ModelTransform.pivot(3.5F, 19.0F, 3.0F));
+        ModelPartData leg2 = modelPartData.addChild("leg2", ModelPartBuilder.create(), ModelTransform.pivot(3.5F, 21.0F, 8.0F));
 
-        ModelPartData leg3 = modelPartData.addChild("leg3", ModelPartBuilder.create(), ModelTransform.pivot(-3.5F, 19.0F, -4.0F));
+        ModelPartData leg3 = modelPartData.addChild("leg3", ModelPartBuilder.create(), ModelTransform.pivot(-3.5F, 21.0F, 1.0F));
 
-        ModelPartData leg1 = modelPartData.addChild("leg1", ModelPartBuilder.create(), ModelTransform.pivot(-3.5F, 19.0F, 3.0F));
+        ModelPartData leg1 = modelPartData.addChild("leg1", ModelPartBuilder.create(), ModelTransform.pivot(-3.5F, 21.0F, 8.0F));
 
-        ModelPartData tail = modelPartData.addChild("tail", ModelPartBuilder.create().uv(0, 0).cuboid(-11.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(5.0F, 19.5F, 2.5F));
+        ModelPartData tail = modelPartData.addChild("tail", ModelPartBuilder.create().uv(0, 0).cuboid(-11.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(5.0F, 21.5F, 7.5F));
 
         return TexturedModelData.of(modelData, 64, 64);
     }

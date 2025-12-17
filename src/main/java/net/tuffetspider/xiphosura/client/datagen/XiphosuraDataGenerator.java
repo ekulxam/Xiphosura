@@ -11,6 +11,7 @@ public class XiphosuraDataGenerator implements DataGeneratorEntrypoint {
 	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(XiphosuraHorseshoeCrabVariantGenerator::new);
+        pack.addProvider(XiphosuraEnUsLangGenerator::new);
 	}
 
     @Override

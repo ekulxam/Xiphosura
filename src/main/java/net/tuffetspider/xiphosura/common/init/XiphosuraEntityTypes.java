@@ -20,7 +20,8 @@ public class XiphosuraEntityTypes {
             Registries.ENTITY_TYPE,
             Identifier.of(Xiphosura.MOD_ID,"horseshoe_crab"),
             EntityType.Builder.create(HorseshoeCrabEntity::new, SpawnGroup.WATER_CREATURE)
-                    .dimensions(0.8f,0.5f)
+                    .dimensions(0.75f, 0.3f)
+                    .eyeHeight(0.125f)
                     .build()
     );
 

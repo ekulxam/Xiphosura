@@ -1,4 +1,4 @@
-package net.tuffetspider.xiphosura.common.entity;
+package net.tuffetspider.xiphosura.common.init;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
@@ -7,8 +7,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.tuffetspider.xiphosura.common.Xiphosura;
+import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabEntity;
 
-public class ModEntities {
+public class XiphosuraEntityTypes {
     public static final EntityType<HorseshoeCrabEntity> HORSESHOE_CRAB = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(Xiphosura.MOD_ID,"horseshoe_crab"),
@@ -17,7 +18,7 @@ public class ModEntities {
                     .build()
     );
 
-    public static void registerModEntities(){
-        FabricDefaultAttributeRegistry.register(ModEntities.HORSESHOE_CRAB, HorseshoeCrabEntity.createBaseAttributes());
+    public static void init(){
+        FabricDefaultAttributeRegistry.register(HORSESHOE_CRAB, HorseshoeCrabEntity.createBaseAttributes());
     }
 }

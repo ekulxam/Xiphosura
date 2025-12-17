@@ -2,9 +2,9 @@ package net.tuffetspider.xiphosura.common;
 
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabEntity;
-import net.tuffetspider.xiphosura.common.entity.ModEntities;
+import net.minecraft.util.Identifier;
+import net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes;
+import net.tuffetspider.xiphosura.common.init.XiphosuraRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,11 @@ public class Xiphosura implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ModEntities.registerModEntities();
+        XiphosuraRegistries.init();
+		XiphosuraEntityTypes.init();
 	}
+
+    public static Identifier id(String path) {
+        return Identifier.of(MOD_ID, path);
+    }
 }

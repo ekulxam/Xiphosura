@@ -12,6 +12,8 @@ import net.minecraft.util.Identifier;
 import net.tuffetspider.xiphosura.common.Xiphosura;
 import net.tuffetspider.xiphosura.common.init.XiphosuraRegistries;
 
+import java.util.function.BiConsumer;
+
 public record HorseshoeCrabVariant(Identifier id) {
     public static final Codec<HorseshoeCrabVariant> CODEC = Identifier.CODEC.xmap(HorseshoeCrabVariant::new, HorseshoeCrabVariant::id);
     public static final PacketCodec<RegistryByteBuf, RegistryEntry<HorseshoeCrabVariant>> PACKET_CODEC = PacketCodecs.registryEntry(XiphosuraRegistries.HORSESHOE_CRAB_VARIANT);
@@ -39,10 +41,12 @@ public record HorseshoeCrabVariant(Identifier id) {
     }
 
     public static void bootstrap(Registerable<HorseshoeCrabVariant> registry) {
-        registry.register(DEFAULT, new HorseshoeCrabVariant(Xiphosura.id("textures/entity/horseshoe_crab.png")));
-        registry.register(BLUE, new HorseshoeCrabVariant(Xiphosura.id("textures/entity/horseshoe_crab_blue.png")));
-        registry.register(TAN, new HorseshoeCrabVariant(Xiphosura.id("textures/entity/horseshoe_crab_tan.png")));
-        registry.register(BLACK, new HorseshoeCrabVariant(Xiphosura.id("textures/entity/horseshoe_crab_black.png")));
-        registry.register(WHITE, new HorseshoeCrabVariant(Xiphosura.id("textures/entity/horseshoe_crab_white.png")));
+        BiConsumer<RegistryKey<HorseshoeCrabVariant>, String> registrar = (key, texture) ->
+                registry.register(key, new HorseshoeCrabVariant(Xiphosura.id(texture)));
+        registrar.accept(DEFAULT, "textures/entity/horseshoe_crab.png");
+        registrar.accept(BLUE, "textures/entity/horseshoe_crab_blue.png");
+        registrar.accept(TAN, "textures/entity/horseshoe_crab_tan.png");
+        registrar.accept(BLACK,"textures/entity/horseshoe_crab_black.png");
+        registrar.accept(WHITE, "textures/entity/horseshoe_crab_white.png");
     }
 }

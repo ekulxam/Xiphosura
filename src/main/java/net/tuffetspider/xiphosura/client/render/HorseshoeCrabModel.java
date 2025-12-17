@@ -5,13 +5,12 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.tuffetspider.xiphosura.common.Xiphosura;
 import net.tuffetspider.xiphosura.common.entity.HorseshoeCrabEntity;
 
 public class HorseshoeCrabModel<T extends HorseshoeCrabEntity> extends SinglePartEntityModel<T> {
-    public static final EntityModelLayer HORSESHOE_CRAB = new EntityModelLayer(Identifier.of(Xiphosura.MOD_ID,"horseshoe_crab"),"main");
+    public static final EntityModelLayer HORSESHOE_CRAB = new EntityModelLayer(Xiphosura.id("horseshoe_crab"), "main");
 
     private final ModelPart head;
     private final ModelPart top_gills;

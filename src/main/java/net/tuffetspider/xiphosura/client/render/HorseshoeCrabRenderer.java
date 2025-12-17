@@ -15,7 +15,7 @@ public class HorseshoeCrabRenderer extends MobEntityRenderer<HorseshoeCrabEntity
 
     @Override
     public Identifier getTexture(HorseshoeCrabEntity entity) {
-        return entity.getEntityVariant().id();
+        return entity.getVariant().id();
     }
 
     @Override

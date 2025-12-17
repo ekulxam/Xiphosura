@@ -12,7 +12,6 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -21,8 +20,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -30,11 +31,15 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes;
+import net.tuffetspider.xiphosura.common.init.XiphosuraRegistries;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
+
+import static net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes.HORSESHOE_CRAB_VARIANT;
 
 //Tracking Entity Variant data
 public class HorseshoeCrabEntity extends AnimalEntity {
-    public static final TrackedDataHandler<RegistryEntry<HorseshoeCrabVariant>> HORSESHOE_CRAB_VARIANT = TrackedDataHandler.create(HorseshoeCrabVariant.PACKET_CODEC);
     private static final TrackedData<RegistryEntry<HorseshoeCrabVariant>> VARIANT = DataTracker.registerData(HorseshoeCrabEntity.class, HORSESHOE_CRAB_VARIANT);
 
     public HorseshoeCrabEntity(EntityType<? extends AnimalEntity> entityType, World world) {
@@ -83,8 +88,7 @@ public class HorseshoeCrabEntity extends AnimalEntity {
     public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
         HorseshoeCrabEntity babycrab = XiphosuraEntityTypes.HORSESHOE_CRAB.create(world);
         if (babycrab != null) {
-            HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
-            babycrab.setVariant(crabVariant);
+            setRandomVariant(babycrab);
         }
         return babycrab;
     }
@@ -95,32 +99,52 @@ public class HorseshoeCrabEntity extends AnimalEntity {
         builder.add(VARIANT, HorseshoeCrabVariant.getDefaultEntry(this.getRegistryManager()));
     }
 
-    public HorseshoeCrabVariant getEntityVariant() {
-        return this.dataTracker.get(VARIANT).value();
+    public HorseshoeCrabVariant getVariant() {
+        return this.getVariantEntry().value();
+    }
+
+    public RegistryEntry<HorseshoeCrabVariant> getVariantEntry() {
+        return this.dataTracker.get(VARIANT);
     }
 
     private void setVariant(RegistryEntry<HorseshoeCrabVariant> variant){
         this.dataTracker.set(VARIANT, variant);
     }
 
-    // TODO: use codecs to read and write variant
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        //nbt.putInt("variant", this.getTypeVariant());
+        nbt.putString("variant", this.getVariantEntry().getKey().orElse(HorseshoeCrabVariant.DEFAULT).getValue().toString());
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        //this.dataTracker.set(VARIANT,nbt.getInt("variant"));
+        Optional.ofNullable(
+                Identifier.tryParse(
+                        nbt.getString("variant")
+                )
+        ).map(id -> RegistryKey.of(XiphosuraRegistries.HORSESHOE_CRAB_VARIANT, id))
+                .flatMap(key -> this.getRegistryManager().getWrapperOrThrow(XiphosuraRegistries.HORSESHOE_CRAB_VARIANT).getOptional(key)).ifPresent(this::setVariant);
     }
 
     @Override
     public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        HorseshoeCrabVariant crabVariant = Util.getRandom(HorseshoeCrabVariant.values(),this.random);
-        setVariant(crabVariant);
+        setRandomVariant(this);
         return super.initialize(world, difficulty, spawnReason, entityData);
+    }
+
+    public static void setRandomVariant(HorseshoeCrabEntity crab) {
+        Util.getRandomOrEmpty(
+                crab.getRegistryManager()
+                        .getWrapperOrThrow(XiphosuraRegistries.HORSESHOE_CRAB_VARIANT)
+                        .streamEntries()
+                        .toList(),
+                crab.random
+        ).ifPresentOrElse(crab::setVariant,
+                () -> {
+                    throw new IllegalStateException("No horseshoe crab variants exist!");
+                });
     }
 
     // TODO: fix movement

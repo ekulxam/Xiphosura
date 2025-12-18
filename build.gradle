@@ -11,11 +11,10 @@ base {
 }
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+	maven {
+        name "Spirit Game Studios"
+        url "https://maven.spiritstudios.dev/releases/"
+    }
 }
 
 fabricApi {
@@ -32,7 +31,11 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
+
+    modLocalRuntime "dev.spiritstudios.specter:specter-api:${project.specter_version}"
+    modLocalRuntime "dev.spiritstudios.specter:specter-core:${project.specter_version}"
+    modLocalRuntime "dev.spiritstudios.specter:specter-debug:${project.specter_version}"
+    modLocalRuntime "dev.spiritstudios.specter:specter-registry:${project.specter_version}"
 }
 
 processResources {

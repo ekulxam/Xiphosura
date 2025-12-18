@@ -3,10 +3,11 @@ package net.tuffetspider.xiphosura.common.entity;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.FuzzyTargeting;
-import net.minecraft.entity.ai.control.MoveControl;
+import net.minecraft.entity.ai.control.AquaticMoveControl;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.AmphibiousSwimNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.ai.pathing.SwimNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -32,19 +33,21 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes;
 import net.tuffetspider.xiphosura.common.init.XiphosuraRegistries;
+import net.tuffetspider.xiphosura.mixin.MobEntityAccessor;
+import net.tuffetspider.xiphosura.mixin.MoveIntoWaterGoalAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 import static net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes.HORSESHOE_CRAB_VARIANT;
 
-//Tracking Entity Variant data
 public class HorseshoeCrabEntity extends AnimalEntity {
     private static final TrackedData<RegistryEntry<HorseshoeCrabVariant>> VARIANT = DataTracker.registerData(HorseshoeCrabEntity.class, HORSESHOE_CRAB_VARIANT);
 
     public HorseshoeCrabEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
-        this.moveControl = new MoveControl(this);
+        this.moveControl = new AquaticMoveControl(this, 60, 15, 0.2F, 0.4F, true);
+        this.setPathfindingPenalty(PathNodeType.WATER, 0.0F);
     }
 
     public static DefaultAttributeContainer.Builder createBaseAttributes() {
@@ -70,13 +73,15 @@ public class HorseshoeCrabEntity extends AnimalEntity {
 
     @Override
     protected void initGoals() {
+        this.goalSelector.add(0, new VariableMoveIntoWaterGoal(this, 10));
         this.goalSelector.add(1, new EscapeDangerGoal(this, 2.0));
         this.goalSelector.add(2, new AnimalMateGoal(this, 1.0));
         this.goalSelector.add(3, new TemptGoal(this, 1.25, (stack) -> stack.isOf(Items.KELP), false));
         this.goalSelector.add(4, new FollowParentGoal(this, 1.25));
         this.goalSelector.add(5, new WanderAroundFloorGoal(this, 1.0));
-        this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
-        this.goalSelector.add(7, new LookAroundGoal(this));
+        this.goalSelector.add(6, new WanderAroundFarGoal(this, 1.0));
+        this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
+        this.goalSelector.add(8, new LookAroundGoal(this));
     }
 
     @Override
@@ -147,28 +152,82 @@ public class HorseshoeCrabEntity extends AnimalEntity {
                 });
     }
 
-    // TODO: fix movement
-    private static class OceanFloorNavigation extends SwimNavigation {
+    private static class OceanFloorNavigation extends AmphibiousSwimNavigation {
         public OceanFloorNavigation(MobEntity mobEntity, World world) {
             super(mobEntity, world);
         }
 
         @Override
-        public boolean isValidPosition(BlockPos pos) {
-            return true;
+        protected double adjustTargetY(Vec3d pos) {
+            double y = super.adjustTargetY(pos);
+
+            if (!this.entity.isInsideWaterOrBubbleColumn()) {
+                return y;
+            }
+
+            boolean floor = ((MobEntityAccessor) this.entity).xiphosura$getGoalSelector()
+                    .getGoals()
+                    .stream()
+                    .anyMatch(prioritizedGoal ->
+                            prioritizedGoal.isRunning() && prioritizedGoal.getGoal() instanceof WanderAroundFloorGoal
+                    );
+
+            if (!floor) {
+                return y;
+            }
+
+            BlockPos blockPos = BlockPos.ofFloored(pos).down();
+
+            blockPos = blockPos.down();
+            if (this.world.getBlockState(blockPos).isOpaqueFullCube(this.world, blockPos)) {
+                return y - 1;
+            }
+            blockPos = blockPos.down();
+            if (this.world.getBlockState(blockPos).isOpaqueFullCube(this.world, blockPos)) {
+                return y - 2;
+            }
+            return y - 3;
         }
     }
 
-    //Attempt to get horseshoe crabs to wander around the ocean floor while still being able to swim
-    //Currently not working
-    private static class WanderAroundFloorGoal extends WanderAroundFarGoal {
+    public static class WanderAroundFloorGoal extends WanderAroundFarGoal {
         public WanderAroundFloorGoal(PathAwareEntity pathAwareEntity, double d) {
             super(pathAwareEntity, d);
         }
 
         @Override
         protected @Nullable Vec3d getWanderTarget() {
-            return this.mob.getRandom().nextFloat() >= this.probability ? FuzzyTargeting.find(this.mob, 10, 7) : super.getWanderTarget();
+            int iterations = 0;
+            Vec3d vec3d = super.getWanderTarget();
+            while (vec3d != null && vec3d.y > this.mob.getY()) {
+                vec3d = super.getWanderTarget();
+                iterations++;
+
+                if (iterations > 10) {
+                    vec3d = null;
+                    break;
+                }
+            }
+            return vec3d;
+        }
+    }
+
+    public static class VariableMoveIntoWaterGoal extends MoveIntoWaterGoal {
+        public final double searchDistance;
+
+        public VariableMoveIntoWaterGoal(PathAwareEntity mob, double searchDistance) {
+            super(mob);
+            this.searchDistance = searchDistance;
+        }
+
+        public boolean shouldContinue() {
+            PathAwareEntity mob = ((MoveIntoWaterGoalAccessor) this).xiphosura$getMob();
+            return !mob.getNavigation().isIdle() && !mob.hasControllingPassenger();
+        }
+
+        public void stop() {
+            ((MoveIntoWaterGoalAccessor) this).xiphosura$getMob().getNavigation().stop();
+            super.stop();
         }
     }
 }

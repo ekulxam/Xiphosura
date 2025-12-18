@@ -1,10 +1,13 @@
 {
-	"required": true,
-	"package": "net.tuffetspider.xiphosura.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "net.tuffetspider.xiphosura.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MobEntityAccessor",
+    "MoveIntoWaterGoalAccessor",
+    "MoveIntoWaterGoalMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

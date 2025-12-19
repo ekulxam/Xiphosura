@@ -1,14 +1,15 @@
 package net.tuffetspider.xiphosura.common.entity;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MovementType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.control.AquaticMoveControl;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.AmphibiousSwimNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.ai.pathing.SwimNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
@@ -31,10 +32,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 import net.tuffetspider.xiphosura.common.init.XiphosuraEntityTypes;
 import net.tuffetspider.xiphosura.common.init.XiphosuraRegistries;
-import net.tuffetspider.xiphosura.mixin.MobEntityAccessor;
-import net.tuffetspider.xiphosura.mixin.MoveIntoWaterGoalAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class HorseshoeCrabEntity extends AnimalEntity {
 
     public HorseshoeCrabEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
-        this.moveControl = new AquaticMoveControl(this, 60, 15, 0.2F, 0.4F, true);
+        this.moveControl = new AquaticMoveControl(this, 60, 15, 0.1F, 0.4F, false);
         this.setPathfindingPenalty(PathNodeType.WATER, 0.0F);
     }
 
@@ -68,17 +68,17 @@ public class HorseshoeCrabEntity extends AnimalEntity {
     }
 
     protected EntityNavigation createNavigation(World world) {
-        return new OceanFloorNavigation(this, world);
+        return new AmphibiousSwimNavigation(this, world);
     }
 
     @Override
     protected void initGoals() {
-        this.goalSelector.add(0, new VariableMoveIntoWaterGoal(this, 10));
+        this.goalSelector.add(0, new VariableMoveIntoWaterGoal(this, 1.0, 10));
         this.goalSelector.add(1, new EscapeDangerGoal(this, 2.0));
         this.goalSelector.add(2, new AnimalMateGoal(this, 1.0));
         this.goalSelector.add(3, new TemptGoal(this, 1.25, (stack) -> stack.isOf(Items.KELP), false));
         this.goalSelector.add(4, new FollowParentGoal(this, 1.25));
-        this.goalSelector.add(5, new WanderAroundFloorGoal(this, 1.0));
+        this.goalSelector.add(5, new WanderAroundFloorGoal(this, 1.0, 15));
         this.goalSelector.add(6, new WanderAroundFarGoal(this, 1.0));
         this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
         this.goalSelector.add(8, new LookAroundGoal(this));
@@ -152,82 +152,53 @@ public class HorseshoeCrabEntity extends AnimalEntity {
                 });
     }
 
-    private static class OceanFloorNavigation extends AmphibiousSwimNavigation {
-        public OceanFloorNavigation(MobEntity mobEntity, World world) {
-            super(mobEntity, world);
-        }
-
-        @Override
-        protected double adjustTargetY(Vec3d pos) {
-            double y = super.adjustTargetY(pos);
-
-            if (!this.entity.isInsideWaterOrBubbleColumn()) {
-                return y;
-            }
-
-            boolean floor = ((MobEntityAccessor) this.entity).xiphosura$getGoalSelector()
-                    .getGoals()
-                    .stream()
-                    .anyMatch(prioritizedGoal ->
-                            prioritizedGoal.isRunning() && prioritizedGoal.getGoal() instanceof WanderAroundFloorGoal
-                    );
-
-            if (!floor) {
-                return y;
-            }
-
-            BlockPos blockPos = BlockPos.ofFloored(pos).down();
-
-            blockPos = blockPos.down();
-            if (this.world.getBlockState(blockPos).isOpaqueFullCube(this.world, blockPos)) {
-                return y - 1;
-            }
-            blockPos = blockPos.down();
-            if (this.world.getBlockState(blockPos).isOpaqueFullCube(this.world, blockPos)) {
-                return y - 2;
-            }
-            return y - 3;
+    public void travel(Vec3d movementInput) {
+        if (this.isLogicalSideForUpdatingMovement() && this.isTouchingWater()) {
+            this.updateVelocity(this.getMovementSpeed(), movementInput);
+            this.move(MovementType.SELF, this.getVelocity());
+            this.setVelocity(this.getVelocity().multiply(0.9));
+        } else {
+            super.travel(movementInput);
         }
     }
 
-    public static class WanderAroundFloorGoal extends WanderAroundFarGoal {
-        public WanderAroundFloorGoal(PathAwareEntity pathAwareEntity, double d) {
-            super(pathAwareEntity, d);
+    public static class WanderAroundFloorGoal extends VariableMoveIntoWaterGoal {
+
+        public WanderAroundFloorGoal(PathAwareEntity mob, double speed, int range) {
+            super(mob, speed, range);
+            this.lowestY = -7;
         }
 
         @Override
-        protected @Nullable Vec3d getWanderTarget() {
-            int iterations = 0;
-            Vec3d vec3d = super.getWanderTarget();
-            while (vec3d != null && vec3d.y > this.mob.getY()) {
-                vec3d = super.getWanderTarget();
-                iterations++;
-
-                if (iterations > 10) {
-                    vec3d = null;
-                    break;
-                }
+        protected boolean isTargetPos(WorldView world, BlockPos pos) {
+            if (pos.getY() <= this.mob.getY() && super.isTargetPos(world, pos)) {
+                BlockPos down = pos.down();
+                return world.getBlockState(down).isOpaqueFullCube(world, down);
             }
-            return vec3d;
+            return false;
         }
     }
 
-    public static class VariableMoveIntoWaterGoal extends MoveIntoWaterGoal {
-        public final double searchDistance;
+    public static class VariableMoveIntoWaterGoal extends MoveToTargetPosGoal {
 
-        public VariableMoveIntoWaterGoal(PathAwareEntity mob, double searchDistance) {
-            super(mob);
-            this.searchDistance = searchDistance;
+        public VariableMoveIntoWaterGoal(PathAwareEntity mob, double speed, int range) {
+            super(mob, speed, range);
+            this.lowestY = -3;
         }
 
+        @Override
         public boolean shouldContinue() {
-            PathAwareEntity mob = ((MoveIntoWaterGoalAccessor) this).xiphosura$getMob();
-            return !mob.getNavigation().isIdle() && !mob.hasControllingPassenger();
+            return !this.mob.isTouchingWater() && this.tryingTime <= 1200 && this.isTargetPos(this.mob.getWorld(), this.targetPos);
         }
 
-        public void stop() {
-            ((MoveIntoWaterGoalAccessor) this).xiphosura$getMob().getNavigation().stop();
-            super.stop();
+        @Override
+        public boolean canStart() {
+            return !this.mob.isTouchingWater() && super.canStart();
+        }
+
+        @Override
+        protected boolean isTargetPos(WorldView world, BlockPos pos) {
+            return world.getBlockState(pos).isOf(Blocks.WATER);
         }
     }
 }

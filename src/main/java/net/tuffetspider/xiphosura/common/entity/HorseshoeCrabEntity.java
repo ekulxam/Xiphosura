@@ -6,6 +6,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.control.AquaticMoveControl;
+import net.minecraft.entity.ai.control.YawAdjustingLookControl;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.AmphibiousSwimNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -47,6 +48,7 @@ public class HorseshoeCrabEntity extends AnimalEntity {
     public HorseshoeCrabEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
         this.moveControl = new AquaticMoveControl(this, 60, 15, 0.1F, 0.4F, false);
+        this.lookControl = new YawAdjustingLookControl(this, 10);
         this.setPathfindingPenalty(PathNodeType.WATER, 0.0F);
     }
 
